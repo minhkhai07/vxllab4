@@ -111,8 +111,8 @@ int main(void)
   	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6,SET);
   	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,SET);
   	SCH_Add_Task(task1,0,50);
-  	SCH_Add_Task(task2,100,0);
-  	SCH_Add_Task(task3,100,100);
+  	SCH_Add_Task(task2,100,100);
+  	SCH_Add_Task(task3,100,0);
 
   while (1)
   {

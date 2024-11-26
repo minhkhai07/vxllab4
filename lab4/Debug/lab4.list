@@ -181,13 +181,13 @@ int main(void)
  80001c6:	2100      	movs	r1, #0
  80001c8:	4809      	ldr	r0, [pc, #36]	; (80001f0 <main+0x68>)
  80001ca:	f000 f921 	bl	8000410 <SCH_Add_Task>
-  	SCH_Add_Task(task2,100,0);
- 80001ce:	2200      	movs	r2, #0
+  	SCH_Add_Task(task2,100,100);
+ 80001ce:	2264      	movs	r2, #100	; 0x64
  80001d0:	2164      	movs	r1, #100	; 0x64
  80001d2:	4808      	ldr	r0, [pc, #32]	; (80001f4 <main+0x6c>)
  80001d4:	f000 f91c 	bl	8000410 <SCH_Add_Task>
-  	SCH_Add_Task(task3,100,100);
- 80001d8:	2264      	movs	r2, #100	; 0x64
+  	SCH_Add_Task(task3,100,0);
+ 80001d8:	2200      	movs	r2, #0
  80001da:	2164      	movs	r1, #100	; 0x64
  80001dc:	4806      	ldr	r0, [pc, #24]	; (80001f8 <main+0x70>)
  80001de:	f000 f917 	bl	8000410 <SCH_Add_Task>
