@@ -22,26 +22,18 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "Timer.h"
+#include "schedule.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef struct {
-void (*pTask) (void);
-uint32_t delay ;
-uint32_t period ;
-uint8_t runme;
-uint32_t taskID ;
-} sTask ;
+
 
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define SCH_MAX_TASKS 40
-#define NO_TASK_ID 0
-sTask SCH_tasks_G [SCH_MAX_TASKS];
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,120 +45,40 @@ sTask SCH_tasks_G [SCH_MAX_TASKS];
 TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
-unsigned char error_code_G=0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_TIM2_Init(void);
+static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void SCH_Init (void) {
-unsigned char i ;
-for (i = 0; i < SCH_MAX_TASKS; i++) {
-SCH_Delete_Task(i);
-}
-// Reset the global error variable
-// − SCH_Delete_Task () will generate an error code
-// ( because the task array is empty)
-Error_code_G = 0;
-Timer_init ();
-Watchdog_init ();
-}
-
-unsigned char SCH_Add_Task ( void (*pFunction) () , unsigned int DELAY, unsigned int PERIOD){
-	unsigned char ind=0;
-	while((SCH_tasks_G[ind].pTask)!=0 && ind<SCH_MAX_TASKS)
-	{
-		ind++;
-	}
-	if(ind==SCH_MAX_TASKS)
-	{
-		error_code_G=ERROR_SCH_TOO_MANY_TASKS;
-		return SCH_MAX_TASKS;
-	}
-	SCH_tasks_G [ind].pTask = pFunction ;
-	SCH_tasks_G [ind].delay = DELAY;
-	SCH_tasks_G [ind].period = PERIOD;
-	SCH_tasks_G [ind].runme = 0;
-	return ind;
-}
-void SCH_dispatch_tasks(void)
-{
-	unsigned char ind;
-	for(ind=0; ind<SCH_MAX_TASKS; ind++)
-	{
-		if(SCH_tasks_G[ind].runme>0)
-		{
-			(*SCH_tasks_G[ind].pTask)();
-			SCH_tasks_G[ind].runme-=1;
-			if(SCH_tasks_G[ind].period==0)
-			{
-				SCH_delete_task(ind);
-			}
-		}
-	}
-	SCH_rp_status();
-	SCH_goto_sleep();
-}
-
-unsigned char SCH_delete_task (const tByte TASK_INDEX) {
-	unsigned char rt_code;
-	if(SCH_tasks_G[TASK_INDEX].pTask==0){
-		error_code_G = ERROR_SCH_CANNOT_DELETE_TASK;
-		rt_code = RETURN_ERROR;
-	}else{
-		rt_code = RETURN_NORMAL;
-	}
-	SCH_tasks_G[TASK_INDEX].pTask = 0x0000;
-	SCH_tasks_G[TASK_INDEX].delay = 0;
-	SCH_tasks_G[TASK_INDEX].period = 0;
-	SCH_tasks_G[TASK_INDEX].runme = 0;
-	return rt_code;
-}
-
-void SCH_goto_sleep(void)
-{
-
-}
-void SCH_rp_status(void)
-{
-
-#ifdef SCH_REPORT_ERRORS
-	if(error_code_G!=Last_error_code_G)
-	{
-		error_post=255-error_code_G;
-		Last_error_code_G=error_code_G;
-		if(error_code_G!=0){
-			Error_tick_count_G = 60000;
-		}else{
-			Error_tick_count_G = 0;
-		}
-	}else{
-		if(Error_tick_count_G!=0){
-			if(--Error_tick_count_G = 0;)
-			{
-				error_code_G=0;
-			}
-		}
-	}
-#endif
-}
 /* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
   * @retval int
   */
+void task1()
+  	{
+  		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+  	}
+  void task2()
+  	{
+  		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
+  	}
+  void task3()
+  	{
+	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+  	}
 
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -175,7 +87,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  SCH_Init();
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -187,21 +99,30 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_TIM2_Init();
+  MX_GPIO_Init();
+  HAL_TIM_Base_Start_IT (& htim2 );
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,SET);
+  	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6,SET);
+  	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,SET);
+  	SCH_Add_Task(task1,0,50);
+  	SCH_Add_Task(task2,100,0);
+  	SCH_Add_Task(task3,100,100);
+
   while (1)
   {
     /* USER CODE END WHILE */
-	  SCH_dispatch_tasks();
-
+	   SCH_dispatch_tasks();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
+
 
 /**
   * @brief System Clock Configuration
@@ -283,27 +204,53 @@ static void MX_TIM2_Init(void)
 
 }
 
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_10
+                          |GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14
+                          |GPIO_PIN_15|GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5
+                          |GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : PA5 PA6 PA7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB0 PB1 PB2 PB10
+                           PB11 PB12 PB13 PB14
+                           PB15 PB3 PB4 PB5
+                           PB6 PB7 PB8 PB9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_10
+                          |GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14
+                          |GPIO_PIN_15|GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5
+                          |GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+}
+
 /* USER CODE BEGIN 4 */
-void SCH_Update(void){
-	unsigned char ind;
-	for(ind=0; ind<SCH_MAX_TASKS; ind++)
-	{
-		if(SCH_tasks_G[ind].pTask){
-			if(SCH_tasks_G[ind].delay==0){
-				SCH_tasks_G[ind].runme+=1;
-				if(SCH_tasks_G[ind].period){
-					SCH_tasks_G[ind].delay=SCH_tasks_G[ind].period;
-					}
-			}else
-				{
-				SCH_tasks_G[ind].delay-=1;
-				}
-			}
-		}
-	}
 void HAL_TIM_PeriodElapsedCallback ( TIM_HandleTypeDef * htim )
 {
-	runTimer();
 	SCH_Update();
 }
 /* USER CODE END 4 */

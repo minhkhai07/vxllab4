@@ -59,6 +59,15 @@ void Error_Handler(void);
 
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN Private defines */
+// Comment this line out if error reporting is NOT required
+#define SCH_REPORT_ERRORS
+//Where error reporting is required , the port on which error codes will be displayed
+// is also determined via main.h:
+# ifdef SCH_REPORT_ERRORS
+// The port on which error codes will be displayed
+// ONLY USED IF ERRORS ARE REPORTED
+#define error_port GPIOB
+#endif
 
 /* USER CODE END Private defines */
 
