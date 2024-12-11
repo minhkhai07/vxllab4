@@ -23,6 +23,12 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "schedule.h"
+#include "global.h"
+#include "Button.h"
+#include "fsm_auto.h"
+#include "fsm_setting.h"
+#include "trafficlight.h"
+#include "7seg_display.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,9 +55,10 @@ TIM_HandleTypeDef htim2;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_TIM2_Init(void);
 static void MX_GPIO_Init(void);
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
+
 
 /* USER CODE END PFP */
 
@@ -64,21 +71,21 @@ static void MX_GPIO_Init(void);
   * @retval int
   */
 void task1()
-  	{
-  		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-  	}
-  void task2()
-  	{
-  		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
-  	}
-  void task3()
-  	{
-	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-  	}
-
+	{
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	}
+	void task2()
+	{
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
+	}
+	void task3()
+	{
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+	}
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -98,31 +105,49 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_TIM2_Init();
   MX_GPIO_Init();
-  HAL_TIM_Base_Start_IT (& htim2 );
+  MX_TIM2_Init();
+  HAL_TIM_Base_Start_IT (&htim2);
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,SET);
-  	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6,SET);
-  	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,SET);
-  	SCH_Add_Task(task1,0,50);
-  	SCH_Add_Task(task2,100,100);
-  	SCH_Add_Task(task3,100,0);
+//  	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,SET);
+//    	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6,SET);
+//    	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,SET);
+//    	SCH_Add_Task(task1,0,50);
+//    	SCH_Add_Task(task2,100,100);
+//    	SCH_Add_Task(task3,100,0);
+
+  	led_NB=5;
+  	led_DT=3;
+  	counter0=0;
+  	counter1=300;
+  	status = cd1;
+    // Add tasks to the scheduler
+
+    SCH_Add_Task(fsm_auto_run, 0, 5); // Main traffic light FSM
+   //SCH_Add_Task(run_ledblink, 0, 50); // Blinking LEDs
+    SCH_Add_Task(fsm_set, 10, 5); // Traffic light setting FSM
+    SCH_Add_Task(decrement_counters, 0, 1);
+    SCH_Add_Task(quet_7SEG, 40, 40); // 7-segment display scanning
+
+    // Tasks derived from the adjusted fsm_set logic
+//    SCH_Add_Task(redgreen_state, 0, 100); // Red-Green state handling
+//    SCH_Add_Task(redyellow_state, 0, 100); // Red-Yellow state handling
+//    SCH_Add_Task(greenred_state, 0, 100); // Green-Red state handling
+//    SCH_Add_Task(yellowred_state, 0, 100); // Yellow-Red state handling
 
   while (1)
   {
     /* USER CODE END WHILE */
-	   SCH_dispatch_tasks();
+	SCH_dispatch_tasks();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
-
 
 /**
   * @brief System Clock Configuration
@@ -214,33 +239,40 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
+                          |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_9
+                          |GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_10
-                          |GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14
-                          |GPIO_PIN_15|GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5
-                          |GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
+                          |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PA5 PA6 PA7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
+  /*Configure GPIO pins : BUTTON_Pin BUTTON1_Pin BUTTON2_Pin */
+  GPIO_InitStruct.Pin = BUTTON_Pin|BUTTON1_Pin|BUTTON2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PA0 PA1 PA2 PA3
+                           PA4 PA5 PA6 PA9
+                           PA10 PA11 PA12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
+                          |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_9
+                          |GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB0 PB1 PB2 PB10
-                           PB11 PB12 PB13 PB14
-                           PB15 PB3 PB4 PB5
-                           PB6 PB7 PB8 PB9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_10
-                          |GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14
-                          |GPIO_PIN_15|GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5
-                          |GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9;
+  /*Configure GPIO pins : PB0 PB1 PB2 PB3
+                           PB4 PB5 PB6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
+                          |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -252,6 +284,7 @@ static void MX_GPIO_Init(void)
 void HAL_TIM_PeriodElapsedCallback ( TIM_HandleTypeDef * htim )
 {
 	SCH_Update();
+	getKeyInput();
 }
 /* USER CODE END 4 */
 

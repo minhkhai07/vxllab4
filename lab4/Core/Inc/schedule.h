@@ -10,7 +10,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "main.h"
-#include "Timer.h"
 #include "error.h"
 
 

@@ -5,37 +5,52 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../Core/Src/Timer.c \
+../Core/Src/7seg_display.c \
+../Core/Src/Button.c \
 ../Core/Src/error.c \
+../Core/Src/fsm_auto.c \
+../Core/Src/fsm_setting.c \
+../Core/Src/global.c \
 ../Core/Src/main.c \
 ../Core/Src/schedule.c \
 ../Core/Src/stm32f1xx_hal_msp.c \
 ../Core/Src/stm32f1xx_it.c \
 ../Core/Src/syscalls.c \
 ../Core/Src/sysmem.c \
-../Core/Src/system_stm32f1xx.c 
+../Core/Src/system_stm32f1xx.c \
+../Core/Src/trafficlight.c 
 
 OBJS += \
-./Core/Src/Timer.o \
+./Core/Src/7seg_display.o \
+./Core/Src/Button.o \
 ./Core/Src/error.o \
+./Core/Src/fsm_auto.o \
+./Core/Src/fsm_setting.o \
+./Core/Src/global.o \
 ./Core/Src/main.o \
 ./Core/Src/schedule.o \
 ./Core/Src/stm32f1xx_hal_msp.o \
 ./Core/Src/stm32f1xx_it.o \
 ./Core/Src/syscalls.o \
 ./Core/Src/sysmem.o \
-./Core/Src/system_stm32f1xx.o 
+./Core/Src/system_stm32f1xx.o \
+./Core/Src/trafficlight.o 
 
 C_DEPS += \
-./Core/Src/Timer.d \
+./Core/Src/7seg_display.d \
+./Core/Src/Button.d \
 ./Core/Src/error.d \
+./Core/Src/fsm_auto.d \
+./Core/Src/fsm_setting.d \
+./Core/Src/global.d \
 ./Core/Src/main.d \
 ./Core/Src/schedule.d \
 ./Core/Src/stm32f1xx_hal_msp.d \
 ./Core/Src/stm32f1xx_it.d \
 ./Core/Src/syscalls.d \
 ./Core/Src/sysmem.d \
-./Core/Src/system_stm32f1xx.d 
+./Core/Src/system_stm32f1xx.d \
+./Core/Src/trafficlight.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

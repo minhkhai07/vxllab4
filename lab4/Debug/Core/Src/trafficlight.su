@@ -1,0 +1,5 @@
+trafficlight.c:11:6:redgreen_state	8	static
+trafficlight.c:19:6:redyellow_state	8	static
+trafficlight.c:27:6:greenred_state	8	static
+trafficlight.c:35:6:yellowred_state	8	static
+trafficlight.c:43:6:clearleds	8	static

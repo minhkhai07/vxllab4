@@ -23,7 +23,7 @@ Core/Src/schedule.o: ../Core/Src/schedule.c ../Core/Inc/schedule.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
- ../Core/Inc/Timer.h ../Core/Inc/error.h
+ ../Core/Inc/error.h
 
 ../Core/Inc/schedule.h:
 
@@ -76,7 +76,5 @@ Core/Src/schedule.o: ../Core/Src/schedule.c ../Core/Inc/schedule.h \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h:
 
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h:
-
-../Core/Inc/Timer.h:
 
 ../Core/Inc/error.h:
